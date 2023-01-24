@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-// A function that reads all lines from the .txt file and return an array of integers with them.
+// A function that reads all lines from the .txt file and returns an array of integers with them.
 func readFile() []int {
 	file, err := os.Open("report-data.txt")
 	if err != nil {
@@ -28,7 +28,24 @@ func readFile() []int {
 	return values
 }
 
+// Calculates the mass of a vehicle using weight values from report.
+func calcMass(reportData []int, numAxle int) float64 {
+	var weightSum float64
+	gvtAcceleration := 9.8
+	for i := 0; i < numAxle; i++ {
+		weightSum += float64(reportData[i])
+	}
+	mass := weightSum / gvtAcceleration
+	return mass
+}
+
 func main() {
-	reportData := readFile() // Reading all data from the report and storing into this array.
+	reportData := readFile()                     // Reading all data from the report and storing into this array.
+	numAxle := len(reportData) / 2               // Number of axes from the vehicle.
+	vehicleMass := calcMass(reportData, numAxle) // Mass of the vehicle in kilograms.
+
+	// Testing with prints.
 	fmt.Println(reportData)
+	fmt.Println(numAxle)
+	fmt.Println(vehicleMass)
 }
