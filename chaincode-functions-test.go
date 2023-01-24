@@ -29,23 +29,41 @@ func readFile() []int {
 }
 
 // Calculates the mass of a vehicle using weight values from report.
-func calcMass(reportData []int, numAxle int) float64 {
+func calcMass(reportData []int, numWheels int) float64 {
 	var weightSum float64
 	gvtAcceleration := 9.8
-	for i := 0; i < numAxle; i++ {
+	for i := 0; i < numWheels; i++ {
 		weightSum += float64(reportData[i])
 	}
 	mass := weightSum / gvtAcceleration
 	return mass
 }
 
+// Calculates the braking force imbalance from two wheels.
+func calcImbalance(leftWheel int, rightWheel int) float64 {
+	var higherNum int
+	var lowerNum int
+	if leftWheel > rightWheel {
+		higherNum = leftWheel
+		lowerNum = rightWheel
+	} else {
+		higherNum = rightWheel
+		lowerNum = leftWheel
+	}
+	imbalance := 100 * (float64(higherNum-lowerNum) / float64(higherNum))
+	return imbalance
+}
+
 func main() {
-	reportData := readFile()                     // Reading all data from the report and storing into this array.
-	numAxle := len(reportData) / 2               // Number of axes from the vehicle.
-	vehicleMass := calcMass(reportData, numAxle) // Mass of the vehicle in kilograms.
+	reportData := readFile()                       // Reading all data from the report and storing into this array.
+	numWheels := len(reportData) / 2               // Number of wheels of the vehicle.
+	numAxle := numWheels / 2                       // Number of axes from the vehicle.
+	vehicleMass := calcMass(reportData, numWheels) // Mass of the vehicle in kilograms.
+	imbalance := calcImbalance(reportData[4], reportData[5])
 
 	// Testing with prints.
 	fmt.Println(reportData)
 	fmt.Println(numAxle)
 	fmt.Println(vehicleMass)
+	fmt.Println(imbalance)
 }
