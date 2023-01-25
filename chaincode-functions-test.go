@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -10,7 +9,7 @@ import (
 
 // A function that reads all lines from the .txt file and returns an array of integers with them.
 func readFile() []int {
-	file, err := os.Open("report-data.txt")
+	file, err := os.Open("report-data.csv")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -37,6 +36,17 @@ func calcMass(reportData []int, numWheels int) float64 {
 	}
 	mass := weightSum / gvtAcceleration
 	return mass
+}
+
+// Checking the type of a vehicle by its mass.
+func checkType(vehicleMass float64) bool {
+	var vehicleType bool
+	if vehicleMass > 3500 {
+		vehicleType = true // True stands for heavy weight vehicle.
+	} else {
+		vehicleType = false // False stands for light weight vehicle.
+	}
+	return vehicleType
 }
 
 // Calculates the braking force imbalance from two wheels.
@@ -90,20 +100,63 @@ func approvesOvrlEfficiency(reportData []int) bool {
 	}
 }
 
-func main() {
-	reportData := readFile()                                      // Reading all data from the report and storing into this array.
-	numWheels := len(reportData) / 2                              // Number of wheels of the vehicle.
-	numAxle := numWheels / 2                                      // Number of axles from the vehicle.
-	vehicleMass := calcMass(reportData, numWheels)                // Mass of the vehicle in kilograms.
-	imbalanceApproval := approvesImbalance(reportData, numWheels) // Stores the approval status of breaking force imbalance of each axle.
-	ovrlEfficiencyApproval := approvesOvrlEfficiency(reportData)  // Overall braking efficiency approval status.
+// Writes a report of the approvals.
+func reportApproval(imbalanceApproval []bool, ovrlEfficiencyApproval bool, vehicleType bool) {
+	file, err := os.Create("report-approval.csv")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+	var str string
+	if vehicleType == true {
+		str = "[Pesado]"
+	} else {
+		str = "[Leve]"
+	}
+	_, err2 := file.WriteString("Veículo " + str + ".\n")
+	if err2 != nil {
+		log.Fatal(err2)
+	}
+	for i := 0; i < len(imbalanceApproval); i++ {
+		if imbalanceApproval[i] == true {
+			str = "[Aprovado]"
+		} else {
+			str = "[Reprovado]"
+		}
+		_, err := file.WriteString("O desequilibrio de frenagem do eixo " + strconv.Itoa(i+1) + " foi " + str + ".\n")
 
-	// Testing with prints.
-	imbalance := calcImbalance(reportData[4], reportData[5])
-	fmt.Println(reportData)
-	fmt.Println(numAxle)
-	fmt.Println(vehicleMass)
-	fmt.Println(imbalance)
-	fmt.Println(imbalanceApproval)
-	fmt.Println(ovrlEfficiencyApproval)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	if ovrlEfficiencyApproval == true {
+		str = "[Aprovada]"
+	} else {
+		str = "[Reprovada]"
+	}
+	_, err3 := file.WriteString("A eficiência total de frenagem foi " + str + ".\n")
+
+	if err3 != nil {
+		log.Fatal(err3)
+	}
+
+}
+
+func main() {
+	reportData := readFile()                                               // Reading all data from the report and storing into this array.
+	numWheels := len(reportData) / 2                                       // Number of wheels of the vehicle.
+	vehicleMass := calcMass(reportData, numWheels)                         // Mass of the vehicle in kilograms.
+	vehicleType := checkType(vehicleMass)                                  // Indicates if a vehicle is light or heavy weighted.
+	imbalanceApproval := approvesImbalance(reportData, numWheels)          // Stores the approval status of breaking force imbalance of each axle.
+	ovrlEfficiencyApproval := approvesOvrlEfficiency(reportData)           // Overall braking efficiency approval status.
+	reportApproval(imbalanceApproval, ovrlEfficiencyApproval, vehicleType) // Writing a new report.
+
+	// Testing variables with prints.
+	// imbalance := calcImbalance(reportData[4], reportData[5])
+	//fmt.Println(reportData)
+	//fmt.Println(vehicleType)
+	//fmt.Println(vehicleMass)
+	//fmt.Println(imbalance)
+	//fmt.Println(imbalanceApproval)
+	//fmt.Println(ovrlEfficiencyApproval)
 }
