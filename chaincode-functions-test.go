@@ -54,16 +54,30 @@ func calcImbalance(leftWheel int, rightWheel int) float64 {
 	return imbalance
 }
 
+func approvesImbalance(reportData []int, numWheels int) []bool {
+	var approvalStatus []bool
+	for i := numWheels; i < len(reportData); i += 2 {
+		if calcImbalance(reportData[i], reportData[i+1]) <= 20 {
+			approvalStatus = append(approvalStatus, true)
+		} else {
+			approvalStatus = append(approvalStatus, false)
+		}
+	}
+	return approvalStatus
+}
+
 func main() {
-	reportData := readFile()                       // Reading all data from the report and storing into this array.
-	numWheels := len(reportData) / 2               // Number of wheels of the vehicle.
-	numAxle := numWheels / 2                       // Number of axes from the vehicle.
-	vehicleMass := calcMass(reportData, numWheels) // Mass of the vehicle in kilograms.
-	imbalance := calcImbalance(reportData[4], reportData[5])
+	reportData := readFile()                                      // Reading all data from the report and storing into this array.
+	numWheels := len(reportData) / 2                              // Number of wheels of the vehicle.
+	numAxle := numWheels / 2                                      // Number of axles from the vehicle.
+	vehicleMass := calcMass(reportData, numWheels)                // Mass of the vehicle in kilograms.
+	imbalanceApproval := approvesImbalance(reportData, numWheels) // Stores the approval status of breaking force imbalance of each axle.
 
 	// Testing with prints.
+	imbalance := calcImbalance(reportData[4], reportData[5])
 	fmt.Println(reportData)
 	fmt.Println(numAxle)
 	fmt.Println(vehicleMass)
 	fmt.Println(imbalance)
+	fmt.Println(imbalanceApproval)
 }
