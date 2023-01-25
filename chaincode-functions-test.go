@@ -54,6 +54,7 @@ func calcImbalance(leftWheel int, rightWheel int) float64 {
 	return imbalance
 }
 
+// Check if the braking force of each axle is approved or not.
 func approvesImbalance(reportData []int, numWheels int) []bool {
 	var approvalStatus []bool
 	for i := numWheels; i < len(reportData); i += 2 {
@@ -66,12 +67,36 @@ func approvesImbalance(reportData []int, numWheels int) []bool {
 	return approvalStatus
 }
 
+// Calculates overall braking efficiency
+func calcOvrlEfficiency(reportData []int) float64 {
+	var overallEfficiency, weightSum, brakingFrcSum float64
+	for i := 0; i < len(reportData); i++ {
+		if i < len(reportData)/2 {
+			weightSum += float64(reportData[i])
+		} else {
+			brakingFrcSum += float64(reportData[i])
+		}
+	}
+	overallEfficiency = weightSum / brakingFrcSum
+	return 100 * overallEfficiency
+}
+
+// Check if overall braking efficiency is approved or not.
+func approvesOvrlEfficiency(reportData []int) bool {
+	if calcOvrlEfficiency(reportData) >= 55 {
+		return true
+	} else {
+		return false
+	}
+}
+
 func main() {
 	reportData := readFile()                                      // Reading all data from the report and storing into this array.
 	numWheels := len(reportData) / 2                              // Number of wheels of the vehicle.
 	numAxle := numWheels / 2                                      // Number of axles from the vehicle.
 	vehicleMass := calcMass(reportData, numWheels)                // Mass of the vehicle in kilograms.
 	imbalanceApproval := approvesImbalance(reportData, numWheels) // Stores the approval status of breaking force imbalance of each axle.
+	ovrlEfficiencyApproval := approvesOvrlEfficiency(reportData)  // Overall braking efficiency approval status.
 
 	// Testing with prints.
 	imbalance := calcImbalance(reportData[4], reportData[5])
@@ -80,4 +105,5 @@ func main() {
 	fmt.Println(vehicleMass)
 	fmt.Println(imbalance)
 	fmt.Println(imbalanceApproval)
+	fmt.Println(ovrlEfficiencyApproval)
 }
