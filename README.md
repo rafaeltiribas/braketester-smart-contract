@@ -1,6 +1,4 @@
-<h1 align="center">
-📄<br>  frenometer-smart-contract
-</h1>
+# frenometer-smart-contract
 
 ## chaincode-functions-test.go
 
