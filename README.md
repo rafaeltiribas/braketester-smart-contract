@@ -1,4 +1,6 @@
-#  frenometer-smart-contract
+<h1 align="center">
+📄<br>  frenometer-smart-contract
+</h1>
 
 ## chaincode-functions-test.go
 
@@ -6,7 +8,7 @@
 
 ## report-data.csv
 
-> A file with all data from the frenometer report. It follows a strict rule: the first values must be the weight measured in each wheel. It starts with the first axle left-side weight value, then the right-side and goes to the next axle. The vehicle can contain as many axles as it wants. Only after all weight values written it writes the braking forces, following the same algorithm as before.
+> A file with all data from the frenometer report. It follows a strict rule: the first values must be the weight measured in each wheel. It starts with the first axle left-side weight value, then the right-side and goes to the next axle. The vehicle can contain as many axis as it wants. Only after all weight values written it writes the braking forces, following the same algorithm as before.
 
 ## report-approval.csv
 
