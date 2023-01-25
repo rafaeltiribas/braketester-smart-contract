@@ -109,32 +109,32 @@ func reportApproval(imbalanceApproval []bool, ovrlEfficiencyApproval bool, vehic
 	defer file.Close()
 	var str string
 	if vehicleType == true {
-		str = "[Pesado]"
+		str = "[Heavy]"
 	} else {
-		str = "[Leve]"
+		str = "[Light]"
 	}
-	_, err2 := file.WriteString("Veículo " + str + ".\n")
+	_, err2 := file.WriteString("Vehicle type => " + str + ".\n")
 	if err2 != nil {
 		log.Fatal(err2)
 	}
 	for i := 0; i < len(imbalanceApproval); i++ {
 		if imbalanceApproval[i] == true {
-			str = "[Aprovado]"
+			str = "[Approved]"
 		} else {
-			str = "[Reprovado]"
+			str = "[Disapproved]"
 		}
-		_, err := file.WriteString("O desequilibrio de frenagem do eixo " + strconv.Itoa(i+1) + " foi " + str + ".\n")
+		_, err := file.WriteString("Braking force imbalance of axis [" + strconv.Itoa(i+1) + "] was " + str + ".\n")
 
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 	if ovrlEfficiencyApproval == true {
-		str = "[Aprovada]"
+		str = "[Approved]"
 	} else {
-		str = "[Reprovada]"
+		str = "[Disapproved]"
 	}
-	_, err3 := file.WriteString("A eficiência total de frenagem foi " + str + ".\n")
+	_, err3 := file.WriteString("Total braking efficiency was " + str + ".\n")
 
 	if err3 != nil {
 		log.Fatal(err3)
@@ -147,7 +147,7 @@ func main() {
 	numWheels := len(reportData) / 2                                       // Number of wheels of the vehicle.
 	vehicleMass := calcMass(reportData, numWheels)                         // Mass of the vehicle in kilograms.
 	vehicleType := checkType(vehicleMass)                                  // Indicates if a vehicle is light or heavy weighted.
-	imbalanceApproval := approvesImbalance(reportData, numWheels)          // Stores the approval status of breaking force imbalance of each axle.
+	imbalanceApproval := approvesImbalance(reportData, numWheels)          // Stores the approval status of braking force imbalance of each axle.
 	ovrlEfficiencyApproval := approvesOvrlEfficiency(reportData)           // Overall braking efficiency approval status.
 	reportApproval(imbalanceApproval, ovrlEfficiencyApproval, vehicleType) // Writing a new report.
 

@@ -1,4 +1,4 @@
-Veículo [Leve].
-O desequilibrio de frenagem do eixo 1 foi [Aprovado].
-O desequilibrio de frenagem do eixo 2 foi [Reprovado].
-A eficiência total de frenagem foi [Aprovada].
+Vehicle type => [Light].
+Braking force imbalance of axis [1] was [Approved].
+Braking force imbalance of axis [2] was [Disapproved].
+Total braking efficiency was [Approved].
