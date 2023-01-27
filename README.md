@@ -1,4 +1,4 @@
-# frenometer-smart-contract
+# braketester-smart-contract
 
 ## chaincode-functions-test.go
 
