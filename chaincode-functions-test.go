@@ -92,11 +92,19 @@ func calcOvrlEfficiency(reportData []int) float64 {
 }
 
 // Check if overall braking efficiency is approved or not.
-func approvesOvrlEfficiency(reportData []int) bool {
-	if calcOvrlEfficiency(reportData) >= 55 {
-		return true
-	} else {
-		return false
+func approvesOvrlEfficiency(reportData []int, vehicleType bool) bool {
+	if vehicleType == true { // Heavy vehicle
+		if calcOvrlEfficiency(reportData) >= 50 {
+			return true
+		} else {
+			return false
+		}
+	} else { // Light vehicle
+		if calcOvrlEfficiency(reportData) >= 55 {
+			return true
+		} else {
+			return false
+		}
 	}
 }
 
@@ -143,13 +151,13 @@ func reportApproval(imbalanceApproval []bool, ovrlEfficiencyApproval bool, vehic
 }
 
 func main() {
-	reportData := readFile()                                               // Reading all data from the report and storing into this array.
-	numWheels := len(reportData) / 2                                       // Number of wheels of the vehicle.
-	vehicleMass := calcMass(reportData, numWheels)                         // Mass of the vehicle in kilograms.
-	vehicleType := checkType(vehicleMass)                                  // Indicates if a vehicle is light or heavy weighted.
-	imbalanceApproval := approvesImbalance(reportData, numWheels)          // Stores the approval status of braking force imbalance of each axle.
-	ovrlEfficiencyApproval := approvesOvrlEfficiency(reportData)           // Overall braking efficiency approval status.
-	reportApproval(imbalanceApproval, ovrlEfficiencyApproval, vehicleType) // Writing a new report.
+	reportData := readFile()                                                  // Reading all data from the report and storing into this array.
+	numWheels := len(reportData) / 2                                          // Number of wheels of the vehicle.
+	vehicleMass := calcMass(reportData, numWheels)                            // Mass of the vehicle in kilograms.
+	vehicleType := checkType(vehicleMass)                                     // Indicates if a vehicle is light or heavy weighted.
+	imbalanceApproval := approvesImbalance(reportData, numWheels)             // Stores the approval status of braking force imbalance of each axle.
+	ovrlEfficiencyApproval := approvesOvrlEfficiency(reportData, vehicleType) // Overall braking efficiency approval status.
+	reportApproval(imbalanceApproval, ovrlEfficiencyApproval, vehicleType)    // Writing a new report.
 
 	// Testing variables with prints.
 	// imbalance := calcImbalance(reportData[4], reportData[5])
