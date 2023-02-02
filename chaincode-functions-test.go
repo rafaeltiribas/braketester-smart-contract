@@ -34,7 +34,7 @@ func calcMass(weightSum int) float64 {
 }
 
 // Sums the weight values and returns the total result.
-func totalWeight(reportData []int, numWheels int) int {
+func calcTotalWeight(reportData []int, numWheels int) int {
 	var weightSum int
 	for i := 0; i < numWheels; i++ {
 		weightSum += reportData[i]
@@ -95,6 +95,18 @@ func calcOvrlEfficiency(reportData []int) float64 {
 	return 100 * overallEfficiency
 }
 
+func calcPbEfficiency(totalForce int, totalWeight int) float64 {
+	return 100 * (float64(totalForce) / float64(totalWeight))
+}
+
+func approvesPbEfficiency(pbEfficiency float64) bool {
+	if pbEfficiency >= 18 {
+		return true
+	} else {
+		return false
+	}
+}
+
 // Check if overall braking efficiency is approved or not.
 func approvesOvrlEfficiency(reportData []int, vehicleType bool) bool {
 	if vehicleType == true { // Heavy vehicle
@@ -113,7 +125,7 @@ func approvesOvrlEfficiency(reportData []int, vehicleType bool) bool {
 }
 
 // Writes a report of the approvals.
-func reportApproval(imbalanceApproval []bool, ovrlEfficiencyApproval bool, vehicleType bool) {
+func reportApproval(imbalanceApproval []bool, ovrlEfficiencyApproval bool, vehicleType bool, pbApproval bool) {
 	file, err := os.Create("report-approval.csv")
 	if err != nil {
 		log.Fatal(err)
@@ -147,21 +159,32 @@ func reportApproval(imbalanceApproval []bool, ovrlEfficiencyApproval bool, vehic
 		str = "[Disapproved]"
 	}
 	_, err3 := file.WriteString("Total braking efficiency was " + str + ".\n")
-
 	if err3 != nil {
 		log.Fatal(err3)
 	}
-
+	if pbApproval == true {
+		str = "[Approved]"
+	} else {
+		str = "[Disapproved]"
+	}
+	_, err4 := file.WriteString("Parking braker was " + str + ".\n")
+	if err4 != nil {
+		log.Fatal(err4)
+	}
 }
 
 func main() {
-	reportData := readFile()                                                  // Reading all data from the report and storing into this array.
-	numWheels := len(reportData) / 2                                          // Number of wheels of the vehicle.
-	vehicleMass := calcMass(totalWeight(reportData, numWheels))               // Mass of the vehicle in kilograms.
-	vehicleType := checkType(vehicleMass)                                     // Indicates if a vehicle is light or heavy weighted.
-	imbalanceApproval := approvesImbalance(reportData, numWheels)             // Stores the approval status of braking force imbalance of each axle.
-	ovrlEfficiencyApproval := approvesOvrlEfficiency(reportData, vehicleType) // Overall braking efficiency approval status.
-	reportApproval(imbalanceApproval, ovrlEfficiencyApproval, vehicleType)    // Writing a new report.
+	fileData := readFile()                                                             // Reading all data from the report and storing into this array.
+	reportData := fileData[:len(fileData)-1]                                           // Only weight and single axles braketester data.
+	pbTotalForce := fileData[len(fileData)-1]                                          // Only the parking brake value.
+	numWheels := len(reportData) / 2                                                   // Number of wheels of the vehicle.
+	vehicleWeight := calcTotalWeight(reportData, numWheels)                            // Vehicle Weight
+	vehicleMass := calcMass(vehicleWeight)                                             // Mass of the vehicle in kilograms.
+	vehicleType := checkType(vehicleMass)                                              // Indicates if a vehicle is light or heavy weighted.
+	imbalanceApproval := approvesImbalance(reportData, numWheels)                      // Stores the approval status of braking force imbalance of each axle.
+	pbApproval := approvesPbEfficiency(calcPbEfficiency(pbTotalForce, vehicleWeight))  // Approval of parking braker efficiency.
+	ovrlEfficiencyApproval := approvesOvrlEfficiency(reportData, vehicleType)          // Overall braking efficiency approval status.
+	reportApproval(imbalanceApproval, ovrlEfficiencyApproval, vehicleType, pbApproval) // Writing a new report.
 
 	// Testing variables with prints.
 	// imbalance := calcImbalance(reportData[4], reportData[5])
