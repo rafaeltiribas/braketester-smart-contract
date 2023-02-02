@@ -95,10 +95,12 @@ func calcOvrlEfficiency(reportData []int) float64 {
 	return 100 * overallEfficiency
 }
 
+// Calculates the parking braker efficiency.
 func calcPbEfficiency(totalForce int, totalWeight int) float64 {
 	return 100 * (float64(totalForce) / float64(totalWeight))
 }
 
+// Check if parking braker efficiency is approved or not.
 func approvesPbEfficiency(pbEfficiency float64) bool {
 	if pbEfficiency >= 18 {
 		return true
