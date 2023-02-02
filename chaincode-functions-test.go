@@ -28,14 +28,18 @@ func readFile() []int {
 }
 
 // Calculates the mass of a vehicle using weight values from report.
-func calcMass(reportData []int, numWheels int) float64 {
-	var weightSum float64
+func calcMass(weightSum int) float64 {
 	gvtAcceleration := 9.8
+	return float64(weightSum) / gvtAcceleration
+}
+
+// Sums the weight values and returns the total result.
+func totalWeight(reportData []int, numWheels int) int {
+	var weightSum int
 	for i := 0; i < numWheels; i++ {
-		weightSum += float64(reportData[i])
+		weightSum += reportData[i]
 	}
-	mass := weightSum / gvtAcceleration
-	return mass
+	return weightSum
 }
 
 // Checking the type of a vehicle by its mass.
@@ -153,7 +157,7 @@ func reportApproval(imbalanceApproval []bool, ovrlEfficiencyApproval bool, vehic
 func main() {
 	reportData := readFile()                                                  // Reading all data from the report and storing into this array.
 	numWheels := len(reportData) / 2                                          // Number of wheels of the vehicle.
-	vehicleMass := calcMass(reportData, numWheels)                            // Mass of the vehicle in kilograms.
+	vehicleMass := calcMass(totalWeight(reportData, numWheels))               // Mass of the vehicle in kilograms.
 	vehicleType := checkType(vehicleMass)                                     // Indicates if a vehicle is light or heavy weighted.
 	imbalanceApproval := approvesImbalance(reportData, numWheels)             // Stores the approval status of braking force imbalance of each axle.
 	ovrlEfficiencyApproval := approvesOvrlEfficiency(reportData, vehicleType) // Overall braking efficiency approval status.
