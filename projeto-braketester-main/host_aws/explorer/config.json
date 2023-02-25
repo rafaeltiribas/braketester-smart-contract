@@ -1,0 +1,9 @@
+{
+	"network-configs": {
+		"host_aws_nmiblocknet_default": {
+			"name": "host_aws_nmiblocknet_default",
+			"profile": "./connection-profile/inmetro.br.json"
+		}
+	},
+	"license": "Apache-2.0"
+}

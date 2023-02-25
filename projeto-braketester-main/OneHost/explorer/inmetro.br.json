@@ -1,0 +1,48 @@
+{
+  "name":"onehost_nmiblocknet_default",
+  "version":"1.0.0",
+  "client":{
+    "tlsEnable": true,
+    "adminCredential": {
+      "id": "exploreradmin",
+      "password": "exploreradminpw"
+    },
+    "enableAuthentication": true,
+    "organization":"InmetroMSP",
+    "connection": {
+      "timeout": {
+        "peer": {
+          "endorser": "300"
+        },
+        "orderer": "300"
+      }
+    }
+  },
+  "channels": {
+    "nmi-channel": {
+      "peers": {
+          "peer0.inmetro.br": {}
+      }
+    }
+  },
+  "organizations":{
+    "InmetroMSP":{
+      "mspid": "InmetroMSP",
+      "adminPrivateKey":{
+         "path": "/tmp/crypto/peerOrganizations/inmetro.br/users/Admin@inmetro.br/msp/keystore/priv_sk"
+      },
+      "peers": ["peer0.inmetro.br"],
+      "signedCert":{
+         "path": "/tmp/crypto/peerOrganizations/inmetro.br/users/Admin@inmetro.br/msp/signcerts/Admin@inmetro.br-cert.pem"
+      }
+    }
+  },
+  "peers":{
+    "peer0.inmetro.br":{
+      "tlsCACerts": {
+        "path": "/tmp/crypto/peerOrganizations/inmetro.br/peers/peer0.inmetro.br/tls/ca.crt"
+      },
+      "url":"grpcs://peer0.inmetro.br:7051"
+    }
+  }
+}

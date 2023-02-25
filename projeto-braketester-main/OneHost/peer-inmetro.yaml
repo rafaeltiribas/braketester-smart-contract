@@ -1,0 +1,169 @@
+version: '2'
+
+volumes:
+  orderer.nmi:
+  orderer2.nmi:
+  orderer3.nmi:
+  orderer5.nmi:
+  orderer4.nmi:
+  peer0.inmetro.br:
+  peer0.nesa.br:
+
+
+networks:
+  nmiblocknet_default:
+
+services:
+
+  orderer.nmi:
+    extends:
+      file:   base/docker-compose-base.yaml
+      service: orderer.nmi
+    container_name: orderer.nmi
+    networks:
+      - nmiblocknet_default
+
+  orderer2.nmi:
+    extends:
+      file: base/peer-base.yaml
+      service: orderer-base
+    environment:
+      - ORDERER_GENERAL_LISTENPORT=8050
+    container_name: orderer2.nmi
+    networks:
+    - nmiblocknet_default
+    volumes:
+        - ./channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+        - ./crypto-config/ordererOrganizations/nmi/orderers/orderer2.nmi/msp:/var/hyperledger/orderer/msp
+        - ./crypto-config/ordererOrganizations/nmi/orderers/orderer2.nmi/tls/:/var/hyperledger/orderer/tls
+        - orderer2.nmi:/var/hyperledger/production/orderer
+    ports:
+    - 8050:8050
+    
+  orderer3.nmi:
+    extends:
+      file: base/peer-base.yaml
+      service: orderer-base
+    environment:
+      - ORDERER_GENERAL_LISTENPORT=9050
+    container_name: orderer3.nmi
+    networks:
+    - nmiblocknet_default
+    volumes:
+        - ./channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+        - ./crypto-config/ordererOrganizations/nmi/orderers/orderer3.nmi/msp:/var/hyperledger/orderer/msp
+        - ./crypto-config/ordererOrganizations/nmi/orderers/orderer3.nmi/tls/:/var/hyperledger/orderer/tls
+        - orderer3.nmi:/var/hyperledger/production/orderer
+    ports:
+    - 9050:9050
+
+  orderer4.nmi:
+    extends:
+      file: base/peer-base.yaml
+      service: orderer-base
+    environment:
+      - ORDERER_GENERAL_LISTENPORT=10050
+    container_name: orderer4.nmi
+    networks:
+    - nmiblocknet_default
+    volumes:
+        - ./channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+        - ./crypto-config/ordererOrganizations/nmi/orderers/orderer4.nmi/msp:/var/hyperledger/orderer/msp
+        - ./crypto-config/ordererOrganizations/nmi/orderers/orderer4.nmi/tls/:/var/hyperledger/orderer/tls
+        - orderer4.nmi:/var/hyperledger/production/orderer
+    ports:
+    - 10050:10050     
+
+  orderer5.nmi:
+    extends:
+      file: base/peer-base.yaml
+      service: orderer-base
+    environment:
+      - ORDERER_GENERAL_LISTENPORT=11050
+    container_name: orderer5.nmi
+    networks:
+    - nmiblocknet_default
+    volumes:
+        - ./channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+        - ./crypto-config/ordererOrganizations/nmi/orderers/orderer5.nmi/msp:/var/hyperledger/orderer/msp
+        - ./crypto-config/ordererOrganizations/nmi/orderers/orderer5.nmi/tls/:/var/hyperledger/orderer/tls
+        - orderer5.nmi:/var/hyperledger/production/orderer
+    ports:
+    - 11050:11050
+        
+  peer0.inmetro.br:
+    container_name: peer0.inmetro.br
+    extends:
+      file:  base/docker-compose-base.yaml
+      service: peer0.inmetro.br
+    networks:
+      - nmiblocknet_default
+    depends_on:
+      - inmetrodb0
+      
+  inmetrodb0:
+    container_name: inmetrodb0
+    image: couchdb:3.1.1
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=adminpw    
+    ports:
+      - 5984:5984  
+    networks:
+      - nmiblocknet_default
+        
+  peer0.nesa.br:
+    container_name: peer0.nesa.br
+    extends:
+      file:  base/docker-compose-base.yaml
+      service: peer0.nesa.br
+    networks:
+      - nmiblocknet_default
+    depends_on:
+      - nesadb0      
+      
+  nesadb0:
+    container_name: nesadb0
+    image: couchdb:3.1.1
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=adminpw    
+    ports:
+      - 6984:5984
+    networks:
+      - nmiblocknet_default
+
+  cli:
+    container_name: cli
+    image: hyperledger/fabric-tools
+    tty: true
+    stdin_open: true
+    dns_search: .
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      #- CORE_LOGGING_LEVEL=DEBUG
+      - FABRIC_LOGGING_SPEC=info
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer0.inmetro:7051
+      - CORE_PEER_LOCALMSPID=InmetroMSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/inmetro.br/peers/peer0.inmetro.br/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/inmetro.br/peers/peer0.inmetro.br/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/nesa.br/peers/peer0.nesa.br/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config/peerOrganizations/nesa.br/users/Admin@nesa.br/msp
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+        - /var/run/:/host/var/run/
+        - ./../chaincode/:/opt/gopath/src/chain
+        - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto-config
+        - ./scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
+        - ./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+
+    depends_on:
+      - orderer.nmi
+      - peer0.inmetro.br
+      - peer0.nesa.br
+    networks:
+      - nmiblocknet_default

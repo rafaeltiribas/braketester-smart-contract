@@ -1,0 +1,2 @@
+Committed chaincode definition for chaincode 'nmi' on channel 'nmi-channel':
+Version: 1.0, Sequence: 1, Endorsement Plugin: escc, Validation Plugin: vscc, Approvals: [InmetroMSP: false, NESAMSP: true]

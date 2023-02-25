@@ -1,0 +1,164 @@
+{
+  "name":"projeto-nesa-20_nmiblocknet_default",
+  "description":"Connection profile to access the nmiblocknet from the PTB org",
+  "version":"0.1",
+  "client":{
+    "organization":"Inmetro",
+    "tlsEnable": true,
+    "channel": "nmi-channel",
+    "adminUser": "admin",
+    "adminPassword": "adminpw",
+    "enableAuthentication": true,
+    "credentialStore":{
+      "path":"/tmp/hfc-kvs",
+      "cryptoStore":{
+        "path":"/tmp/hfc-cvs"
+      },
+      "wallet":"wallet-name"
+    }
+  },
+  "channels": {
+    "nmi-channel": {
+        "orderers": [
+            "orderer.nmi"
+        ],
+        "peers": {
+            "peer0.inmetro.br": {
+                "endorsingPeer": true,
+                "chaincodeQuery": true,
+                "ledgerQuery": true,
+                "eventSource": true
+            },
+            "peer0.ptb.de": {
+                "endorsingPeer": true,
+                "chaincodeQuery": true,
+                "ledgerQuery": true,
+                "eventSource": true
+            }
+        }
+    }
+  },
+  "organizations":{
+    "orderer.nmi":{
+      "mspid": "OrdererMSP",
+      "orderers": [
+        "orderer.nmi"
+      ],
+      "certificateAuthorities": [
+        "ca.inmetro.br"
+      ],
+
+      "users": {
+        "Admin": {
+          "cert": "../../crypto-config/ordererOrganizations/orderer.nmi/users/Admin@orderer.nmi/msp/signcerts/Admin@orderer.nmi-cert.pem",
+          "private_key": "../../crypto-config/ordererOrganizations/orderer.nmi/users/Admin@orderer.nmi/msp/keystore/priv_sk"}
+      }
+    },
+    "inmetro.br":{
+      "mspid": "InmetroMSP",
+      "peers":[
+        "peer0.inmetro.br"
+      ],
+      "certificateAuthorities": [
+        "ca.inmetro.br"
+      ],
+
+      "users": {
+        "Admin": {
+          "cert": "../../crypto-config/peerOrganizations/inmetro.br/users/Admin@inmetro.br/msp/signcerts/Admin@inmetro.br-cert.pem",
+          "private_key": "../../crypto-config/peerOrganizations/inmetro.br/users/Admin@inmetro.br/msp/keystore/priv_sk"
+        }
+      }
+    },
+    "ptb.de":{
+      "mspid": "PTBMSP",
+      "peers":[
+        "peer0.ptb.de"
+      ],
+      "certificateAuthorities": [
+        "ca.ptb.de"
+      ],
+
+      "users": {
+        "Admin": {
+          "cert": "../../crypto-config/peerOrganizations/ptb.de/users/Admin@ptb.de/msp/signcerts/Admin@ptb.de-cert.pem",
+          "private_key": "../../crypto-config/peerOrganizations/ptb.de/users/Admin@ptb.de/msp/keystore/priv_sk"
+        }
+      }
+    }
+  },
+  "orderers":{
+    "orderer.nmi":{
+      "url":"18.230.183.38:7050",
+      "grpcOptions": {
+        "grpc.ssl_target_name_override": "orderer.nmi",
+        "grpc-max-send-message-length": 15
+      },
+      "tlsCACerts": {
+        "path": "../crypto-config/ordererOrganizations/orderer.nmi/tlsca/tlsca.orderer.nmi-cert.pem"
+      },
+      "clientKey": {
+        "path": "../../crypto-config/ordererOrganizations/orderer.nmi/orderers/orderer.nmi.orderer.nmi/tls/server.key"
+      },
+      "clientCert": {
+        "path": "../../crypto-config/ordererOrganizations/orderer.nmi/orderers/orderer.nmi.orderer.nmi/tls/server.crt"
+      }
+    }
+  },
+  "peers":{
+    "peer0.inmetro.br":{
+      "url":"18.230.183.38:7051",
+      "eventUrl":"18.230.183.38:7053",
+      "grpcOptions": {
+        "grpc.ssl_target_name_override": "peer0.inmetro.br",
+        "grpc-max-send-message-length": 15
+      },
+      "tlsCACerts": {
+        "path": "../../crypto-config/peerOrganizations/inmetro.br/tlsca/tlsca.inmetro.br-cert.pem"
+      },
+      "clientKey": {
+        "path": "../../crypto-config/peerOrganizations/inmetro.br/peers/peer0.inmetro.br/tls/server.key"
+      },
+      "clientCert": {
+        "path": "../../crypto-config/peerOrganizations/inmetro.br/peers/peer0.inmetro.br/tls/server.crt"
+      }
+    },
+    "peer0.ptb.de":{
+      "url":"18.230.183.38:9051",
+      "eventUrl":"18.230.183.38:9053",
+      "grpcOptions": {
+        "grpc.ssl_target_name_override": "peer0.ptb.de",
+        "grpc-max-send-message-length": 15
+      },
+      "tlsCACerts": {
+        "path": "../../crypto-config/peerOrganizations/ptb.de/tlsca/tlsca.ptb.de-cert.pem"
+      },
+      "clientKey": {
+        "path": "../../crypto-config/peerOrganizations/ptb.de/peers/peer0.ptb.de/tls/server.key"
+      },
+      "clientCert": {
+        "path": "../../crypto-config/peerOrganizations/ptb.de/peers/peer0.ptb.de/tls/server.crt"
+      }
+    }
+  },
+  "certificateAuthorities":{
+    "ca.inmetro.br":{
+      "url":"https://18.230.183.38:7054",
+      "registrar":[
+        {
+          "enrollId":"admin",
+          "enrollSecret":"adminpw"
+        }
+      ]
+    },
+    "ca.ptb.de":{
+      "url":"https://18.230.183.38:9054",
+      "registrar":[
+        {
+          "enrollId":"admin",
+          "enrollSecret":"adminpw"
+        }
+      ]
+    }
+  }
+}

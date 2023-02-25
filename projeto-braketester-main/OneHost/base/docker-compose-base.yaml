@@ -1,0 +1,68 @@
+version: '2'
+
+services:
+
+  orderer.nmi:
+    container_name: orderer.nmi
+    extends:
+      file: peer-base.yaml
+      service: orderer-base
+    command: orderer
+    volumes:
+    - ../channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+    - ../crypto-config/ordererOrganizations/nmi/orderers/orderer.nmi/msp:/var/hyperledger/orderer/msp
+    - ../crypto-config/ordererOrganizations/nmi/orderers/orderer.nmi/tls/:/var/hyperledger/orderer/tls
+    - orderer.nmi:/var/hyperledger/production/orderer
+    ports:
+      - 7050:7050
+           
+  peer0.inmetro.br:
+    container_name: peer0.inmetro.br
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      - GODEBUG=netdns=go
+      - CORE_PEER_ID=peer0.inmetro.br
+      - CORE_PEER_ADDRESS=peer0.inmetro.br:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.inmetro.br:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.inmetro.br:7051
+      - CORE_PEER_LOCALMSPID=InmetroMSP
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=inmetrodb0:5984  
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw  
+    volumes:
+        - /var/run/:/host/var/run/
+        - ../crypto-config/peerOrganizations/inmetro.br/peers/peer0.inmetro.br/msp:/etc/hyperledger/fabric/msp
+        - ../crypto-config/peerOrganizations/inmetro.br/peers/peer0.inmetro.br/tls:/etc/hyperledger/fabric/tls
+        - peer0.inmetro.br:/var/hyperledger/production
+    ports:
+      - 7051:7051
+
+  peer0.nesa.br:
+    container_name: peer0.nesa.br
+    extends:
+      file: peer-base.yaml
+      service: peer-base
+    environment:
+      - GODEBUG=netdns=go
+      - CORE_PEER_ID=peer0.nesa.br
+      - CORE_PEER_ADDRESS=peer0.nesa.br:9051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:9051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.nesa.br:9051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.nesa.br:9051
+      - CORE_PEER_LOCALMSPID=NESAMSP
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=nesadb0:5984 
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=adminpw
+    volumes:
+        - /var/run/:/host/var/run/
+        - ../crypto-config/peerOrganizations/nesa.br/peers/peer0.nesa.br/msp:/etc/hyperledger/fabric/msp
+        - ../crypto-config/peerOrganizations/nesa.br/peers/peer0.nesa.br/tls:/etc/hyperledger/fabric/tls
+    ports:
+        - 9051:9051
+        #- peer0.nesa.br:/var/hyperledger/production
+

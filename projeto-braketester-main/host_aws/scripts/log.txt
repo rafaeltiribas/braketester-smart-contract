@@ -1,0 +1,1 @@
+[31m2021-11-16 19:05:18.760 -03 [main] InitCmd -> ERRO 001[0m Cannot run peer because cannot init crypto, specified path "/home/augusto/projeto-nesa-2.0/msp" does not exist or cannot be accessed: stat /home/augusto/projeto-nesa-2.0/msp: no such file or directory

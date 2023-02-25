@@ -1,0 +1,2 @@
+Committed chaincode definition for chaincode 'nesa' on channel 'nmi-channel':
+Version: 1.0, Sequence: 2, Endorsement Plugin: escc, Validation Plugin: vscc, Approvals: [InmetroMSP: true, NESAMSP: false]

@@ -1,0 +1,31 @@
+OrdererOrgs:
+  - Name: Orderer
+    Domain: nmi
+    Specs:
+      - Hostname: orderer
+      - Hostname: orderer2
+      - Hostname: orderer3
+      - Hostname: orderer4
+      - Hostname: orderer5
+
+
+PeerOrgs:
+  - Name: NESA
+    Domain: nesa.br
+    EnableNodeOUs: true
+    Template:
+      Count: 2
+
+
+    Users: 
+      Count: 1
+      
+  - Name: Inmetro
+    Domain: inmetro.br
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+
+
+    Users: 
+      Count: 1

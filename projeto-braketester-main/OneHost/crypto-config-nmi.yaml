@@ -1,0 +1,34 @@
+OrdererOrgs:
+  - Name: Orderer
+    Domain: nmi
+    Specs:
+      - Hostname: orderer
+        CommonName: "orderer.nmi"
+      - Hostname: orderer2
+        CommonName: "orderer2.nmi"
+      - Hostname: orderer3
+        CommonName: "orderer3.nmi"
+      - Hostname: orderer4
+        CommonName: "orderer4.nmi"
+      - Hostname: orderer5
+        CommonName: "orderer5.nmi"
+
+PeerOrgs:
+  - Name: NESA
+    Domain: nesa.br
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: peer0
+        CommonName: "peer0.nesa.br"
+        SANS:
+          - localhost
+
+      
+  - Name: Inmetro
+    Domain: inmetro.br
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: peer0
+        CommonName: "peer0.inmetro.br"
+        SANS:
+          - localhost

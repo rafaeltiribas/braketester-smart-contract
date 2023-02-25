@@ -1,0 +1,8 @@
+2022.06.01-04:37:25.200[90m debug[39m [caliper] [rateControl.js] 	Constructed a winston logger with the specified settings
+2022.06.01-04:37:25.326[32m info [39m [caliper] [cli-launch-manager] 	Binding specification is present, performing binding for "fabric"
+2022.06.01-04:37:25.329[33m warn [39m [caliper] [bind] 	SUT SDK version is not specified, defaulting to "latest"
+2022.06.01-04:37:25.329[33m warn [39m [caliper] [bind] 	Working directory not specified. Using "/home/augusto/Teste_aws1_teste/caliper-benchmarks"
+2022.06.01-04:37:25.329[32m info [39m [caliper] [bind] 	Binding for fabric@latest. This might take some time...
+2022.06.01-04:37:25.329[32m info [39m [caliper] [bind] 	Using working directory: /home/augusto/Teste_aws1_teste/caliper-benchmarks
+2022.06.01-04:37:25.330[32m info [39m [caliper] [bind] 	Calling npm with: install fabric-client@1.4.14 fabric-protos@2.0.0-snapshot.1 fabric-network@1.4.14
+2022.06.01-04:38:05.773[31m error[39m [caliper] [bind] 	Failed to execute "npm" with return code 1.
