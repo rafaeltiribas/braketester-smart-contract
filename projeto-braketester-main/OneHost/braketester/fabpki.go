@@ -27,6 +27,7 @@ import (
 	"math/big"
 	"strconv"
 	"time"
+	"log"
 
 	//these imports are for Hyperledger Fabric interface
 	"github.com/hyperledger/fabric-chaincode-go/shim"
@@ -62,7 +63,7 @@ type ECDSASignature struct {
 type Meter struct {
 	//PubKey ecdsa.PublicKey `json:"pubkey"`
 	PubKey string `json:"pubkey"`
-	imbalanceApv bool `json: "imbalanceapproval"`
+	imbalanceApv []bool `json: "imbalanceapproval"`
 	pbApv bool `json: "parkbrakeapproval"`
 	ovrlApv bool `json: "ovrleffiencyapproval"`
 }
@@ -136,6 +137,10 @@ func (s *SmartContract) Invoke(stub shim.ChaincodeStubInterface) sc.Response {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+func  intTest(num int) int{
+	return num + 1
+}
+
 func (s *SmartContract) registerMeter(stub shim.ChaincodeStubInterface, args []string) sc.Response {
 
 	//gets the parameters associated with the meter ID and the public key (in PEM format)
@@ -147,10 +152,27 @@ func (s *SmartContract) registerMeter(stub shim.ChaincodeStubInterface, args []s
 	meterid := args[0]
 	strpubkey := args[1]
 	fileData := args[2]
+	teste, err := strconv.Atoi(args[3])
+	if err != nil {
+		log.Fatal(err)
+	}
+	teste = intTest(teste)
 
-	reportData := fileData[:len(fileData)-1]
-	pbTotalForce := fileData[len(fileData)-1]
+	var reportData []int
+	for i := 0; i < len(fileData)-1; i++{
+		fileValue, err := strconv.Atoi(string(fileData[i]))
+		if err != nil {
+			log.Fatal(err)
+		}
+		reportData = append(reportData, fileValue)
+	}
+
+	pbTotalForce, err1 := strconv.Atoi(string(fileData[len(fileData)-1]))
+	if err1 != nil {
+		log.Fatal(err1)
+	}
 	numWheels := len(reportData) / 2 
+
 	vehicleWeight := calcTotalWeight(reportData, numWheels) 
 	vehicleMass := calcMass(vehicleWeight) 
 	vehicleType := checkType(vehicleMass)

@@ -76,7 +76,7 @@ if __name__ == "__main__":
         cc_name=cc_name, 
         cc_version=cc_version,
         fcn='registerMeter', 
-        args=[meter_id, pub_key, reportData], 
+        args=[meter_id, pub_key, reportData, 4], 
         cc_pattern=None))
 
     #so far, so good
