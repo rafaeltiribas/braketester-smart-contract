@@ -11,11 +11,13 @@
 import sys
 from hfc.fabric import Client as client_fabric
 import asyncio
+import json
 
 domain = "ptb.de" #you can change for "inmetro.br"
 channel_name = "nmi-channel"
 cc_name = "fabpki"
 cc_version = "1.0"
+
 
 if __name__ == "__main__":
 
@@ -30,55 +32,51 @@ if __name__ == "__main__":
     #format the name of the expected public key
     pub_key_file = meter_id + ".pub"
 
+   	
+#LER ARQUIVO .JSON CONTENDO OS DADOS DO FRENOMETRO
+
+with open('report-data.json', 'r') as file:
+    reportData = json.load(file)
+reportData = reportData['data']
+print(reportData)
 
 
-    #LER ARQUIVO DO RELATORIO E ARMAZENAR LISTA NA VARIAVEL REPORTDATA
-    file = open('report-data.csv', 'r')
-    fileLine = file.readlines()
-    count = 0
-    reportData = []
-    for line in fileLine:
-    	count += 1
-    	reportData.append(line)
-    print("File read.")
-    	
-    	
+#shows the meter public key
+print("Continuing with the public key:\n",pub_key)
 
-    #shows the meter public key
-    print("Continuing with the public key:\n",pub_key)
+#creates a loop object to manage async transactions
+loop = asyncio.get_event_loop()
 
-    #creates a loop object to manage async transactions
-    loop = asyncio.get_event_loop()
+#instantiate the hyperledeger fabric client
+c_hlf = client_fabric(net_profile=(domain + ".json"))
 
-    #instantiate the hyperledeger fabric client
-    c_hlf = client_fabric(net_profile=(domain + ".json"))
+#get access to Fabric as Admin user
+admin = c_hlf.get_user(domain, 'Admin')
+callpeer = "peer0." + domain
 
-    #get access to Fabric as Admin user
-    admin = c_hlf.get_user(domain, 'Admin')
-    callpeer = "peer0." + domain
+#query peer installed chaincodes, make sure the chaincode is installed
+print("Checking if the chaincode fabpki is properly installed:")
+response = loop.run_until_complete(c_hlf.query_installed_chaincodes(
+    requestor=admin,
+    peers=[callpeer]
+))
+print(response)
 
-    #query peer installed chaincodes, make sure the chaincode is installed
-    print("Checking if the chaincode fabpki is properly installed:")
-    response = loop.run_until_complete(c_hlf.query_installed_chaincodes(
-        requestor=admin,
-        peers=[callpeer]
-    ))
-    print(response)
+#the Fabric Python SDK do not read the channel configuration, we need to add it mannually'''
+c_hlf.new_channel(channel_name)
 
-    #the Fabric Python SDK do not read the channel configuration, we need to add it mannually'''
-    c_hlf.new_channel(channel_name)
+#invoke the chaincode to register the meter
+response = loop.run_until_complete(c_hlf.chaincode_invoke(
+    requestor=admin, 
+    channel_name=channel_name, 
+    peers=[callpeer],
+    cc_name=cc_name, 
+    cc_version=cc_version,
+    fcn='registerMeter', 
+    args=[meter_id, pub_key, reportData, 4], 
+    cc_pattern=None))
 
-    #invoke the chaincode to register the meter
-    response = loop.run_until_complete(c_hlf.chaincode_invoke(
-        requestor=admin, 
-        channel_name=channel_name, 
-        peers=[callpeer],
-        cc_name=cc_name, 
-        cc_version=cc_version,
-        fcn='registerMeter', 
-        args=[meter_id, pub_key, reportData, 4], 
-        cc_pattern=None))
+#so far, so good
+print("Success on sending data report!")
 
-    #so far, so good
-    print("Success on sending data report!")
 
