@@ -45,7 +45,7 @@ if __name__ == "__main__":
     #LER ARQUIVO .JSON CONTENDO OS DADOS DO FRENOMETRO
     with open('report-data.json', 'r') as file:
         reportData = json.load(file)
-    print(reportData)
+    #print(reportData)
     #reportData = reportData['data']
     
     
@@ -95,10 +95,10 @@ if __name__ == "__main__":
     asyncio.new_event_loop()
     #asyncio.set_event_loop_policy(AnyThreadEventLoopPolicy())
     
-    print(type(vehicle_plate))
+    #print(type(vehicle_plate))
     #print(type(encodedReportData))
     #print(str(encodedReportData))
-    print(str(reportData))
+    #print(str(reportData))
 
     #invoke the chaincode to register the meter
     response = loop.run_until_complete(c_hlf.chaincode_invoke(

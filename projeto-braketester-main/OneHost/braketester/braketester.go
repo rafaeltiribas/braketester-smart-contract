@@ -24,6 +24,7 @@ import (
 	"math/big"
 	"strconv"
 	"time"
+	"log"
 	"strings"
 
 	//these imports are for Hyperledger Fabric interface
@@ -58,10 +59,11 @@ type ECDSASignature struct {
 // meter public key and measures. All blockchain transactions operates with this type.
 // IMPORTANT: all the field names must start with upper case
 type Meter struct {
-	Vehicle        string `json:"vehicle"`
-	ImbalanceApv   []bool `json:"imbalanceapproval"`
-	PbApv          bool   `json:"parkbrakeapproval"`
-	OvrlApv        bool   `json:"ovrleffiencyapproval"`
+	Vehicle        string `json:"VEHICLE_TYPE"`
+	ImbalanceApv   []string `json:"IMBALANCE_APPROVAL"`
+	PbApv          string   `json:"PARK_BRAKE_APPROVAL"`
+	OvrlApv        string   `json:"OVERALL_EFFICIENCY_APPROVAL"`
+	Time           time.Time	`json: "TEST_TIME"`
 }
 
 
@@ -143,107 +145,128 @@ func  intTest(num int) int{
 
 func (s *SmartContract) registerMeter(stub shim.ChaincodeStubInterface, args []string) sc.Response {
 
-	//gets the parameters associated with the meter ID and the public key (in PEM format)
-	// meterid := args[0]
-	// strpubkey := args[1]
-	// data, err := strconv.Atoi(fileScanner.Text())
-	//////////////////////////////////////////////////////////////////////////////////////
-	
-	/*
-		Solução: Carregar a string para uma variável do tipo .json
-		*usar dicionário* 
-	// dev-peer0.inmetro.br-braketester_1.0-59e7064dffb5f8f95aeb965ef848200e7f213dbd633970887d5fd766d2a5485d-3db8b4e2ac3ef010997212f9cf5c74eee50be5e1aee9b15edf44e2d0afe1c867
-	*/
-	//adicionar if para verificacao de parametros
-	fmt.Println("TESTE1")
-
 	vehicle_plate := args[0]
-	jsonString := args[1]
+	jsonStr := args[1]
 	
-	fmt.Println("TESTE2")
-	
-	fmt.Println(jsonString)
-	jsonString = strings.ReplaceAll(jsonString, "'", "\"")
-	fmt.Println(jsonString)
+	jsonStr = strings.ReplaceAll(jsonStr, "'", "\"")
+	fmt.Println(jsonStr)
 
-        var dataMap map[string][]string
-        err := json.Unmarshal([]byte(jsonString), &dataMap)
-        if err != nil {
-            fmt.Println("Erro ao decodificar JSON:", err)
-        }
-        dataStr := dataMap["data"]
-        reportData := make([]int, len(dataStr))
-        for i, valStr := range dataStr {
-            val, err := strconv.Atoi(valStr)
-            if err != nil {
-                fmt.Println("Erro ao converter valor para inteiro:", err)
-            }
-            reportData[i] = val
-        }
-	
-    	fmt.Println("TESTE4")
-    	fmt.Println(reportData)
-	
 	/*
-	for i := 0; i < len(fileData)-1; i++{
-		fileValue, err := strconv.Atoi(fileData[i])
-		if err != nil {
-			log.Fatal(err)
-		}
-		reportData = append(reportData, fileValue)
-	}*/
+        var dataMap map[string][]string
+	err := json.Unmarshal([]byte(jsonString), &dataMap)
+	if err != nil {
+		fmt.Println("Erro ao decodificar JSON:", err)
+	}
 
-	fmt.Println("TESTE5")
+	dataStr := dataMap["data"]
+	reportData := make([]int, len(dataStr))
+	for i, valStr := range dataStr {
+		val, err := strconv.Atoi(valStr)
+		if err != nil {
+			fmt.Println("Erro ao converter valor para inteiro:", err)
+		}
+		reportData[i] = val
+	}*/
+	
+	type Data struct {
+		Data []int `json:"data"`
+	}
+
+	// Decodificar a string JSON para a struct
+	var jsonData Data
+	err := json.Unmarshal([]byte(jsonStr), &jsonData)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Acessar a lista de inteiros
+	reportData := jsonData.Data
+
+	fmt.Println(reportData)
 	
 	pbTotalForce := reportData[len(reportData)-1]
 	numWheels := (len(reportData)-1) / 2 
-	fmt.Println(len(reportData))
-	fmt.Println(numWheels)
-	fmt.Println("TESTE6")
 	
 	vehicleWeight := calcTotalWeight(reportData, numWheels) 
-	fmt.Println("Passou calcTotalWeight")
+	fmt.Println("calcTotalWeight OK")
 	vehicleMass := calcMass(vehicleWeight) 
-	fmt.Println("Passou calcMass")
+	fmt.Println("calcMass OK")
 	vehicleType := checkType(vehicleMass)
-	fmt.Println("Passou checkType")
+	fmt.Println("checkType OK")
 	imbalanceApproval := approvesImbalance(reportData, numWheels) 
-	fmt.Println("Passou approvesImbalance")
+	fmt.Println("approvesImbalance OK")
 	pbApproval := approvesPbEfficiency(calcPbEfficiency(pbTotalForce, vehicleWeight))
-	fmt.Println("Passou approvesPbEfficiency")
+	fmt.Println("approvesPbEfficiency OK")
 	ovrlEfficiencyApproval := approvesOvrlEfficiency(reportData, vehicleType)
-	fmt.Println("Passou approvesOvrlEfficiency")
+	fmt.Println("approvesOvrlEfficiency OK")
 	
-	fmt.Println("TESTE7")
-	
-	///////////////////////////////////////////////////////////////////////////////////////
+	register := createRegister(ovrlEfficiencyApproval, vehicleType, pbApproval)
+	imbalanceRegister := createRegisterImbalance(imbalanceApproval)
+	testTime := time.Now()
 	
 	//creates the meter record with the respective public key
-	var meter = Meter{ImbalanceApv: imbalanceApproval, PbApv: pbApproval, OvrlApv: ovrlEfficiencyApproval}
-	
-	fmt.Println("TESTE8")
+	var meter = Meter{Vehicle: register[0], ImbalanceApv: imbalanceRegister, PbApv: register[2], OvrlApv: register[1], Time: testTime}
 
 	//encapsulates meter in a JSON structure
 	meterAsBytes, _ := json.Marshal(meter)
-	
-	fmt.Println("TESTE9")
 
 	//registers meter in the ledger
 	stub.PutState(vehicle_plate, meterAsBytes)
-	
-	fmt.Println("TESTE10")
 
 	//loging...
 	fmt.Println("Registering meter: ", meter)
-	
-	fmt.Println("FIM")
 
 	//notify procedure success
-	return shim.Success(nil)
-	
+	fmt.Println("Success!")
+	return shim.Success(nil)	
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+func createRegisterImbalance(imbalanceApproval []bool) []string{
+	var imbalance []string
+	var str string
+	
+	for i := 0; i < len(imbalanceApproval); i++ {
+		if imbalanceApproval[i] == true {
+			str = "Braking force imbalance of axis [" + strconv.Itoa(i+1) + "] was [Approved]"
+		} else {
+			str = "Braking force imbalance of axis [" + strconv.Itoa(i+1) + "] was [Disapproved]"
+		}
+		imbalance = append(imbalance, str)	
+	}
+	
+	return imbalance
+}
+
+func createRegister(ovrlEfficiencyApproval bool, vehicleType bool, pbApproval bool) []string{
+	var str string
+	var register []string
+	
+	if vehicleType == true {
+		str = "Vehicle type => [Heavy Weight]"
+	} else {
+		str = "Vehicle type => [Light Weight]"
+	}
+	
+	register = append(register, str)
+	
+	if ovrlEfficiencyApproval == true {
+		str = "Total braking efficiency was [Approved]"
+	} else {
+		str = "Total braking efficiency was [Disapproved]"
+	}
+	
+	register = append(register, str)
+	
+	if pbApproval == true {
+		str = "Parking braker was [Approved]"
+	} else {
+		str = "Parking braker was [Disapproved]"
+	}
+	
+	register = append(register, str)
+	
+	return register
+}
 
 /*
 	This method is a dummy test that makes the endorser "sleep" for some seconds.
