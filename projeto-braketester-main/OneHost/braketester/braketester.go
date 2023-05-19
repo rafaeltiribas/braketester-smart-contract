@@ -17,17 +17,14 @@ import (
 	//the majority of the imports are trivial...
 	"bytes"
 	"crypto/ecdsa"
-	"crypto/sha256"
 	"crypto/x509"
-	"encoding/asn1"
-	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"math/big"
 	"strconv"
 	"time"
-	"log"
+	"strings"
 
 	//these imports are for Hyperledger Fabric interface
 	"github.com/hyperledger/fabric-chaincode-go/shim"
@@ -61,12 +58,20 @@ type ECDSASignature struct {
 // meter public key and measures. All blockchain transactions operates with this type.
 // IMPORTANT: all the field names must start with upper case
 type Meter struct {
-	//PubKey ecdsa.PublicKey `json:"pubkey"`
-	PubKey string `json:"pubkey"`
+	Vehicle        string `json:"vehicle"`
+	ImbalanceApv   []bool `json:"imbalanceapproval"`
+	PbApv          bool   `json:"parkbrakeapproval"`
+	OvrlApv        bool   `json:"ovrleffiencyapproval"`
+}
+
+
+/*
+//PubKey ecdsa.PublicKey `json:"pubkey"`
+	Vehicle Plate string `json:"pubkey"`
 	imbalanceApv []bool `json: "imbalanceapproval"`
 	pbApv bool `json: "parkbrakeapproval"`
 	ovrlApv bool `json: "ovrleffiencyapproval"`
-}
+*/
 
 // PublicKeyDecodePEM method decodes a PEM format public key. So the smart contract can lead
 // with it, store in the blockchain, or even verify a signature.
@@ -100,11 +105,6 @@ func (s *SmartContract) Invoke(stub shim.ChaincodeStubInterface) sc.Response {
 	if fn == "registerMeter" {
 		//registers a new meter into the ledger
 		return s.registerMeter(stub, args)
-
-	} else if fn == "checkSignature" {
-		//inserts a measurement which increases the meter consumption counter. The measurement
-		return s.checkSignature(stub, args)
-
 	} else if fn == "sleepTest" {
 		//retrieves the accumulated consumption
 		return s.sleepTest(stub, args)
@@ -148,128 +148,102 @@ func (s *SmartContract) registerMeter(stub shim.ChaincodeStubInterface, args []s
 	// strpubkey := args[1]
 	// data, err := strconv.Atoi(fileScanner.Text())
 	//////////////////////////////////////////////////////////////////////////////////////
+	
+	/*
+		Solução: Carregar a string para uma variável do tipo .json
+		*usar dicionário* 
+	// dev-peer0.inmetro.br-braketester_1.0-59e7064dffb5f8f95aeb965ef848200e7f213dbd633970887d5fd766d2a5485d-3db8b4e2ac3ef010997212f9cf5c74eee50be5e1aee9b15edf44e2d0afe1c867
+	*/
+	//adicionar if para verificacao de parametros
+	fmt.Println("TESTE1")
 
-	meterid := args[0]
-	strpubkey := args[1]
-	fileData := args[2]
-	teste, err := strconv.Atoi(args[3])
-	if err != nil {
-		log.Fatal(err)
-	}
-	teste = intTest(teste)
+	vehicle_plate := args[0]
+	jsonString := args[1]
+	
+	fmt.Println("TESTE2")
+	
+	fmt.Println(jsonString)
+	jsonString = strings.ReplaceAll(jsonString, "'", "\"")
+	fmt.Println(jsonString)
 
-	var reportData []int
+        var dataMap map[string][]string
+        err := json.Unmarshal([]byte(jsonString), &dataMap)
+        if err != nil {
+            fmt.Println("Erro ao decodificar JSON:", err)
+        }
+        dataStr := dataMap["data"]
+        reportData := make([]int, len(dataStr))
+        for i, valStr := range dataStr {
+            val, err := strconv.Atoi(valStr)
+            if err != nil {
+                fmt.Println("Erro ao converter valor para inteiro:", err)
+            }
+            reportData[i] = val
+        }
+	
+    	fmt.Println("TESTE4")
+    	fmt.Println(reportData)
+	
+	/*
 	for i := 0; i < len(fileData)-1; i++{
-		fileValue, err := strconv.Atoi(string(fileData[i]))
+		fileValue, err := strconv.Atoi(fileData[i])
 		if err != nil {
 			log.Fatal(err)
 		}
 		reportData = append(reportData, fileValue)
-	}
+	}*/
 
-	pbTotalForce, err1 := strconv.Atoi(string(fileData[len(fileData)-1]))
-	if err1 != nil {
-		log.Fatal(err1)
-	}
-	numWheels := len(reportData) / 2 
-
+	fmt.Println("TESTE5")
+	
+	pbTotalForce := reportData[len(reportData)-1]
+	numWheels := (len(reportData)-1) / 2 
+	fmt.Println(len(reportData))
+	fmt.Println(numWheels)
+	fmt.Println("TESTE6")
+	
 	vehicleWeight := calcTotalWeight(reportData, numWheels) 
+	fmt.Println("Passou calcTotalWeight")
 	vehicleMass := calcMass(vehicleWeight) 
+	fmt.Println("Passou calcMass")
 	vehicleType := checkType(vehicleMass)
+	fmt.Println("Passou checkType")
 	imbalanceApproval := approvesImbalance(reportData, numWheels) 
+	fmt.Println("Passou approvesImbalance")
 	pbApproval := approvesPbEfficiency(calcPbEfficiency(pbTotalForce, vehicleWeight))
+	fmt.Println("Passou approvesPbEfficiency")
 	ovrlEfficiencyApproval := approvesOvrlEfficiency(reportData, vehicleType)
+	fmt.Println("Passou approvesOvrlEfficiency")
+	
+	fmt.Println("TESTE7")
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	
 	//creates the meter record with the respective public key
-	var meter = Meter{PubKey: strpubkey, imbalanceApv: imbalanceApproval, pbApv: pbApproval, ovrlApv: ovrlEfficiencyApproval}
+	var meter = Meter{ImbalanceApv: imbalanceApproval, PbApv: pbApproval, OvrlApv: ovrlEfficiencyApproval}
+	
+	fmt.Println("TESTE8")
 
 	//encapsulates meter in a JSON structure
 	meterAsBytes, _ := json.Marshal(meter)
+	
+	fmt.Println("TESTE9")
 
 	//registers meter in the ledger
-	stub.PutState(meterid, meterAsBytes)
+	stub.PutState(vehicle_plate, meterAsBytes)
+	
+	fmt.Println("TESTE10")
 
 	//loging...
 	fmt.Println("Registering meter: ", meter)
+	
+	fmt.Println("FIM")
 
 	//notify procedure success
 	return shim.Success(nil)
+	
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-func (s *SmartContract) checkSignature(stub shim.ChaincodeStubInterface, args []string) sc.Response {
-
-	//validate args vector lenght
-	if len(args) != 3 {
-		return shim.Error("It was expected 3 parameter: <meter ID> <information> <signature>")
-	}
-
-	//gets the parameter associated with the meter ID and the digital signature
-	meterid := args[0]
-	info := args[1]
-	sign := args[2]
-
-	//loging...
-	fmt.Println("Testing args: ", meterid, info, sign)
-
-	//retrive meter record
-	meterAsBytes, err := stub.GetState(meterid)
-
-	//test if we receive a valid meter ID
-	if err != nil || meterAsBytes == nil {
-		return shim.Error("Error on retrieving meter ID register")
-	}
-
-	//creates Meter struct to manipulate returned bytes
-	MyMeter := Meter{}
-
-	//loging...
-	fmt.Println("Retrieving meter bytes: ", meterAsBytes)
-
-	//convert bytes into a Meter object
-	json.Unmarshal(meterAsBytes, &MyMeter)
-
-	//decode de public key to the internal format
-	pubkey := PublicKeyDecodePEM(MyMeter.PubKey)
-
-	//loging...
-	fmt.Println("Retrieving meter after unmarshall: ", MyMeter)
-
-	//calculates the information hash
-	hash := sha256.Sum256([]byte(info))
-
-	//now we decode the signature to extract the DER-encoded byte string
-	der, err := base64.StdEncoding.DecodeString(sign)
-	if err != nil {
-		return shim.Error("Error on decode the digital signature")
-	}
-
-	//creates a signature data structure
-	sig := &ECDSASignature{}
-
-	//unmarshal the R and S components of the ASN.1-encoded signature
-	_, err = asn1.Unmarshal(der, sig)
-	if err != nil {
-		return shim.Error("Error on get R and S terms from the digital signature")
-	}
-
-	//validates de digital signature
-	valid := ecdsa.Verify(&pubkey, hash[:], sig.R, sig.S)
-
-	// buffer is a JSON array containing records
-	var buffer bytes.Buffer
-	buffer.WriteString("[")
-	buffer.WriteString("\"Counter\":")
-	buffer.WriteString(strconv.FormatBool(valid))
-	buffer.WriteString("]")
-
-	//notify procedure success
-	return shim.Success(buffer.Bytes())
-}
 
 /*
 	This method is a dummy test that makes the endorser "sleep" for some seconds.
@@ -593,7 +567,7 @@ func calcImbalance(leftWheel int, rightWheel int) float64 {
 // Check if the braking force of each axle is approved or not.
 func approvesImbalance(reportData []int, numWheels int) []bool {
 	var approvalStatus []bool
-	for i := numWheels; i < len(reportData); i += 2 {
+	for i := numWheels; i < (len(reportData)-2); i += 2 {
 		if calcImbalance(reportData[i], reportData[i+1]) <= 20 {
 			approvalStatus = append(approvalStatus, true)
 		} else {
@@ -607,7 +581,7 @@ func approvesImbalance(reportData []int, numWheels int) []bool {
 func calcOvrlEfficiency(reportData []int) float64 {
 	var overallEfficiency, weightSum, brakingFrcSum float64
 	for i := 0; i < len(reportData); i++ {
-		if i < len(reportData)/2 {
+		if i < (len(reportData)-1)/2 {
 			weightSum += float64(reportData[i])
 		} else {
 			brakingFrcSum += float64(reportData[i])
