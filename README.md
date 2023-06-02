@@ -2,18 +2,9 @@
 
 We adopt [Hyperledger Fabric 2.2 LTS](https://hyperledger-fabric.readthedocs.io/en/release-2.2/) as our blockchain platform. We configure a globally distributed blockchain network that supports the execution of Golang chaincodes.
 
-We describe in the next sections the main aspects related to the Project NESA blockchain network customizing, how to instantiate the network, how to deploy a chaincode, and how to use a simple Python client to invoke it.
-
 ## The customized blockchain network
-The main files for each organization are:
-
-**configtx.yaml** basic network profile of Project NESA blockchain network.
-**crypto-config-nmi.yaml** (Membership Service Provider) configuration. We generate all the digital certificates from it.
-**peer-inmetro.yaml** contains the docker containers configuration for the Inmetro, Nesa and Orderer peers. It extends the file [docker-compose-base.yaml](base/docker-compose-base.yaml), which in turn extends [peer-base.yaml](base/peer-base.yaml), which together constitutes a template of standard configuration items.
 
 If you are not used to the Hyperledger Fabric, we strongly recommend this [tutorial](https://hyperledger-fabric.readthedocs.io/en/release-2.2/test_network.html). It teaches in detail how to create a test Fabric network.
-
-You can load and use the Project NESA network by executing the steps in the following subsections. You must execute all the commands into the repository base folder.
 
 ### 1. Prepare the host machine.
 
@@ -29,7 +20,7 @@ Execute the **installation script**, localizated in prerequirements folder, in b
 
 ### 2. Generate the MSP artifacts
 
-The MSP artifacts include all the cryptographic stuff necessary to identify the peers of a Fabric network. They are basically asymmetric cryptographic key pairs and self-signed digital certificates. Since the Project NESA is a multi-host configuration, the hosts must have the same MSP artifacts. Currently, we are working on security policy to generate and distribute the MSP artifacts among organizations. As a workaround, only one organization must execute this procedure and replicate the MSP artifacts for the others. 
+The MSP artifacts include all the cryptographic stuff necessary to identify the peers of a Fabric network. They are basically asymmetric cryptographic key pairs and self-signed digital certificates. Currently, we are working on security policy to generate and distribute the MSP artifacts among organizations. As a workaround, only one organization must execute this procedure and replicate the MSP artifacts for the others. 
 
 Execute the script to generate MSP artifacts in one host and copy to the other:
 
@@ -75,8 +66,6 @@ docker stats
 
 Chaincodes are smart contracts in Fabric. In this document, we assume you already know how to implement and deploy a chaincode. If it is not your case, there is a [nice tutorial](https://hyperledger-fabric.readthedocs.io/en/release-2.2/chaincode4ade.html) covering a lot of information about this issue. We strongly recommend you to check it before continuing.
 
-If you already know everything you need about developing and deploying a chaincode, we can talk about packing, installing etc  chaincodes in the Project NESA blockchain network. We use the **nesa** chaincode as an example.
-
 A copy of the chaincode source is available [here](nesa/nesa.go).
 
 Our blockchain network profiles include, for each organization, a client container *cli*, which effectively manages chaincodes. The *cli* is necessary to compile the chaincode and install it in an endorser peer. It is also handy to test chaincodes. It provides an interface to execute the command *peer chaincode*. 
@@ -90,7 +79,7 @@ By default, we associate *cli* with the *peer0* of the respective organization. 
 A example of this command is:
 
 ```console
-./start.sh deployCC -ccn nesa -ccp nesa -ccl go
+./start.sh deployCC -ccn braketester -ccp braketester -ccl go
 ```
 
 This command will do all you need to invoke the chaincode.
@@ -103,18 +92,6 @@ You can test the chaincode using this command.
 
 ```console
 ./start.sh testCC -c <channel-name> -ccn <chaincode name> -args <arguments>
-```
-
-A example of this command is:
-
-```console
-./start.sh testCC -c nmi-channel -ccn nesa -args '{"Args":["countHistory","inmetro.br"]}'
-```
-
-You will see something like this, depending on the function you run:
-
-```
-[chaincodeCmd] chaincodeInvokeOrQuery -> INFO 001 Chaincode invoke successful. result: status:200 payload:"[\"Counter\":1]" 
 ```
 
 ## Dealing with client applications
