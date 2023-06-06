@@ -155,7 +155,7 @@ The [Hyperledger Explorer](https://www.hyperledger.org/projects/explorer) is a w
 * **explorer**: a web server that delivers the application.
 * **explorer-db**: a PostgreSQL database server that is required to run Explorer.
 
-The following steps describe how to start and stop Explorer. Firstly, make sure that the blockchain network is up and that you executed the previous steps related to install and instantiate the *nesa* chaincode. You can check these points with the following command:
+The following steps describe how to start and stop Explorer. Firstly, make sure that the blockchain network is up and that you executed the previous steps related to install and instantiate the *braketester* chaincode. You can check these points with the following command:
 
 ```console
 docker ps
