@@ -1,4 +1,4 @@
-Research team:
+'Research team:
 * *Carlos Augusto R. de Oliveira. (caruviaro@outlook.com)*
 
 Coordination:
@@ -6,27 +6,21 @@ Coordination:
 
 *Revised on December 1th, 2021.*
 
-## Project NESA 
+## Breaktester project
 
 We adopt [Hyperledger Fabric 2.2 LTS](https://hyperledger-fabric.readthedocs.io/en/release-2.2/) as our blockchain platform. We configure a globally distributed blockchain network that supports the execution of Golang chaincodes.
 
-We describe in the next sections the main aspects related to the Project NESA blockchain network customizing, how to instantiate the network, how to deploy a chaincode, and how to use a simple Python client to invoke it.
-
-## The customized blockchain network
-
-We provide a flexible Fabric blockchain network configuration, initially with three organizations. The first one is the **Orderer** organization, which encapsulates the Project NESA network orderer service. So far, we are using the *etcdraft orderer* provided for Fabric. The second and third organizations are **PTB** (under the virtual domain *ptb.de*) and **Inmetro** (under de virtual domain *inmetro.br*). 
-
-PTB and Inmetro represent two organizations that integrates the Project NESA network at the moment. In the Project NESA initial configuration, each organization provides one peer (peer0). The configuration also considers that peer0 in both organizations are endorser peers. However, the configuration is flexible, and the network administrator in each organization can easily change it to include more peers and also to change peers' roles. We also use [Couchdb](https://hyperledger-fabric.readthedocs.io/en/release-2.2/couchdb_tutorial.html) containers to improve the performance of storing the ledger state on each peer.
+We describe in the next sections the main aspects related to the braketester project blockchain network customizing, how to instantiate the network, how to deploy a chaincode, and how to use a simple Python client to invoke it.
 
 The main files are:
 
-* [configtx.yaml](configtx.yaml): basic network profile of Project NESA blockchain network.
+* [configtx.yaml](configtx.yaml): basic network profile of braketester project blockchain network.
 * [crypto-config-nmi.yaml](crypto-config-nmi.yaml): (Membership Service Provider) configuration. We generate all the digital certificates from it.
 * [peer-inmetro.yaml](peer-inmetro.yaml): contains the docker containers configuration for the Inmetro, PTB and Orderer peers. It extends the file [docker-compose-base.yaml](base/docker-compose-base.yaml), which in turn extends [peer-base.yaml](base/peer-base.yaml), which together constitutes a template of standard configuration items.
 
 If you are not used to the Hyperledger Fabric, we strongly recommend this [tutorial](https://hyperledger-fabric.readthedocs.io/en/release-2.2/test_network.html). It teaches in detail how to create a test Fabric network.
 
-You can load and use the Project NESA network by executing the steps in the following subsections. You must execute all the commands into the repository base folder.
+You can load and use the breaktester project network by executing the steps in the following subsections. You must execute all the commands into the repository base folder.
 
 ### 1. Prepare the host machine.
 
@@ -42,7 +36,7 @@ Execute the [installation script](prerequirements/installFabric.sh):
 
 ### 2. Generate the MSP artifacts
 
-The MSP artifacts include all the cryptographic stuff necessary to identify the peers of a Fabric network. They are basically asymmetric cryptographic key pairs and self-signed digital certificates. Since the Project NESA is a multi-host configuration, the hosts must have the same MSP artifacts. Currently, we are working on security policy to generate and distribute the MSP artifacts among organizations. As a workaround, only one organization must execute this procedure and replicate the MSP artifacts for the others. 
+The MSP artifacts include all the cryptographic stuff necessary to identify the peers of a Fabric network. They are basically asymmetric cryptographic key pairs and self-signed digital certificates. Since the braketester project is a multi-host configuration, the hosts must have the same MSP artifacts. Currently, we are working on security policy to generate and distribute the MSP artifacts among organizations. As a workaround, only one organization must execute this procedure and replicate the MSP artifacts for the others. 
 
 Execute the script to generate MSP artifacts:
 
@@ -88,10 +82,6 @@ docker stats
 
 Chaincodes are smart contracts in Fabric. In this document, we assume you already know how to implement and deploy a chaincode. If it is not your case, there is a [nice tutorial](https://hyperledger-fabric.readthedocs.io/en/release-2.2/chaincode4ade.html) covering a lot of information about this issue. We strongly recommend you to check it before continuing.
 
-If you already know everything you need about developing and deploying a chaincode, we can talk about packing, installing etc  chaincodes in the Project NESA blockchain network. We use the **nesa** chaincode as an example.
-
-A copy of the chaincode source is available [here](nesa/nesa.go).
-
 Our blockchain network profiles include, for each organization, a client container *cli*, which effectively manages chaincodes. The *cli* is necessary to compile the chaincode and install it in an endorser peer. It is also handy to test chaincodes. It provides an interface to execute the command *peer chaincode*. 
 
 By default, we associate *cli* with the *peer0* of the respective organization. You also can replicate its configuration to create additional client containers. We provide the script [start.sh](start.sh) that encapsulates the use of a client container and simplifies the chaincode life cycle management. The script has the following syntax:
@@ -103,7 +93,7 @@ By default, we associate *cli* with the *peer0* of the respective organization. 
 A example of this command is:
 
 ```console
-./start.sh deployCC -ccn nesa -ccp nesa -ccl go
+./start.sh deployCC -ccn braketester -ccp braketester -ccl go
 ```
 
 This command will do all you need to invoke the chaincode.
@@ -114,12 +104,6 @@ You can test the chaincode using this command.
 
 ```console
 ./start.sh testCC -c <channel-name> -ccn <chaincode name> -args <arguments>
-```
-
-A example of this command is:
-
-```console
-./start.sh testCC -c nmi-channel -ccn nesa -args '{"Args":["countHistory","inmetro.br"]}'
 ```
 
 You will see something like this, depending on the function you run:
@@ -163,7 +147,7 @@ sudo make install
 ```
 
 ### Configure the .json network profile
-The Python SDK applications depend on a network profile encoded in a .json format. Since we have two independent organizations, the network profile changes accordingly to them. In this repository, we provide the [inmetro.br.json](nesa-cli/inmetro.br.json) file. The network profile keeps the necessary credentials to access the blockchain network. You must configure this file properly every time that you create new digital certificates in the MSP:
+
 
 * Open the respective .json in a text editor;
 * Check for the entries called "tlsCACerts", "clientKey", "clientCert", "cert" and "private_key" on each organization. Notice that they point out to different files into the (./cripto-config) directory that corresponds to digital certificates and keys of each organization. The private key must correspond to the user who will submit the transactions (by default, we use Admin);
@@ -177,11 +161,10 @@ The Client Application includes the following modules:
 * [keygen-ecdsa.py](fabpki-cli/keygen-ecdsa.py): It is a simple Python script that generates a pair of ECDSA keys. These keys are necessary to run all the other modules.
 * [register-ecdsa.py](fabpki-cli/register-ecdsa.py): It invokes the *registerMeter* chaincode, which appends a new meter digital asset into the ledger. You must provide the respective ECDSA public key.
 * [verify-ecdsa.py](fabpki-cli/verify-ecdsa.py): It works as a client that verifies if a given digital signature corresponds to the meter's private key. The client must provide a piece of information and the respective digital signature. The client module will inform **True** for a legitimate signature and **False** in the opposite.
-* [Insert Measurement](nesa-cli/InsertbMeasurement): The folder InsertMeasurement contains the clients responsible for collecting data from a path, convert in json format and calling chaincode methods to insert this data into the blockchain.
-* [Query History](nesa-cli/countHistory.py): Count all transactions present in the ledger for an id.
-* [Get Consumption](nesa-cli/getConsumption.py): Get the data of a meter id.
-* [Mongo](nesa-cli/mongo.py): A client to acess directly the database of the blockchain.
-* [App](nesa-cli/app.py): An interface to acess the clients using your browser.
+* [Query History]: Count all transactions present in the ledger for an id.
+* [Get Consumption]: Get the data of a meter id.
+* [Mongo]: A client to acess directly the database of the blockchain.
+* [App]: An interface to acess the clients using your browser.
 
 ## Using the Hyperledger Explorer
 
@@ -189,7 +172,7 @@ The [Hyperledger Explorer](https://www.hyperledger.org/projects/explorer) is a w
 * **explorer**: a web server that delivers the application.
 * **explorer-db**: a PostgreSQL database server that is required to run Explorer.
 
-The following steps describe how to start and stop Explorer. Firstly, make sure that the blockchain network is up and that you executed the previous steps related to install and instantiate the *nesa* chaincode. You can check these points with the following command:
+The following steps describe how to start and stop Explorer. Firstly, make sure that the blockchain network is up and that you executed the previous steps related to install and instantiate the *braketester* chaincode. You can check these points with the following command:
 
 ```console
 docker ps
